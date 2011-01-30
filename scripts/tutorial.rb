@@ -7,6 +7,8 @@ db   = Connection.new.db('twitter')
 profiles = db.collection('profiles')
 friends  = db.collection('friends')
 
+puts "FYI http://api.mongodb.org/ruby/current/file.TUTORIAL.html"
+
 pp "find by limit"
 profiles.find().limit(1).each do |prof|
   pp prof
@@ -64,7 +66,7 @@ begin
   puts "counting unique node with kyotocabinet"
 rescue
   unique = {}
-  puts "counting unique node with builtin hash"
+  puts "counting unique node with builtin hash. it takes huge memory...use http://fallabs.com/kyotocabinet/"
 end
 
 friends.find().each do |doc|
