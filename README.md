@@ -1,31 +1,33 @@
+#yats socialgraph dump
+
 twitter日本語ユーザー100万人のフォローイングとプロフィールです。
 レコメンデーションの実験や分析に使えるかもしれません。
 
-内容：
-  streaming apiから日本語を含み、過去に400つぶやき以上、過去3週間以内に発言のユーザーを収集しました。
-  プロフィール情報、フォローイング情報を見ることが出来ます。
+##内容
+streaming apiから日本語を含み、過去に400つぶやき以上、過去3週間以内に発言のユーザーを収集しました。
+プロフィール情報、フォローイング情報を見ることが出来ます。
 
-プロフィールの内容：
+###プロフィールの内容
   約108万人分
-  フォローイングの中には英語のユーザーやprotectedのユーザーが含まれます。
-  ただし、それらのユーザーのプロフィールは収集されていません。
+フォローイングの中には英語のユーザーやprotectedのユーザーが含まれます。
+ただし、それらのユーザーのプロフィールは収集されていません。
 
-ソーシャルグラフの内容：
+###ソーシャルグラフの内容
   約300万ノード / 約2.8億エッジ
-  内訳は以下の条件になります。
+内訳は以下の条件になります。
   u  = 日本語アクティブユーザー
   u2 = 日本語ではない OR 活発ではない OR api_error
   => = following
-  データに入っているもの：
+  データに入っているもの
     u => u
     u => u2
-  入っていないもの：
+  入っていないもの
     u2 => u
     u2 => u2
 
-取得：
+##取得
   http://
-操作：
+##操作
 ruby:
   $ bundle
   $ ruby scripts/tutorial.rb
@@ -34,30 +36,28 @@ python:
   $ easy_install netowrkx
   $ python scripts/pagerank.py kzk_mover
 
-MongoDBのインストール：
-----
+##MongoDBのインストール
 ubuntu:
   $ apt-get install mongodb
 
-MongoDBにダンプを入れる：
-----
+MongoDBにダンプを入れる
 以下のコマンドで生成したMongoDB(1.6.5) dumpをMongoDBに読み込みます。
-$ mongodump --db twitter -v
-DATABASE: twitter        to     dump/twitter
-        twitter.system.indexes to dump/twitter/system.indexes.bson
-        twitter.friends to dump/twitter/friends.bson
-        twitter.profiles to dump/twitter/profiles.bson
-
-$ wget http://api.yats-data.com/data/socialgraph/yats.graph.ja.20110130.tar.gz
-$ tar xzvf yats.graph.ja.20110130.tar.gz
-$ ls dump
-# 以下の操作の前にチェックしてください http://www.mongodb.org/display/DOCS/Import+Export+Tools
-$ mongorestore -d twitter dump/twitter/
-$ mongo
-# how to use : http://www.mongodb.org/display/DOCS/Manual 
-> use twitter
-> db.friends.stats()                          
-{
+  $ mongodump --db twitter -v
+  DATABASE: twitter        to     dump/twitter
+          twitter.system.indexes to dump/twitter/system.indexes.bson
+          twitter.friends to dump/twitter/friends.bson
+          twitter.profiles to dump/twitter/profiles.bson
+  
+  $ wget http://api.yats-data.com/data/socialgraph/yats.graph.ja.20110130.tar.gz
+  $ tar xzvf yats.graph.ja.20110130.tar.gz
+  $ ls dump
+  # 以下の操作の前にチェックしてください http://www.mongodb.org/display/DOCS/Import+Export+Tools
+  $ mongorestore -d twitter dump/twitter/
+  $ mongo
+  # how to use : http://www.mongodb.org/display/DOCS/Manual 
+  > use twitter
+  > db.friends.stats()                          
+  {
 	"ns" : "twitter.friends",
 	"count" : 1035491,
 	"size" : 3412631332,
@@ -74,9 +74,9 @@ $ mongo
 		"internal_id_1" : 43892736
 	},
 	"ok" : 1
-}
-> db.profiles.stats()
-{
+  }
+  > db.profiles.stats()
+  {
 	"ns" : "twitter.profiles",
 	"count" : 1088040,
 	"size" : 2900683092,
@@ -94,4 +94,4 @@ $ mongo
 		"screen_name_1" : 56655872
 	},
 	"ok" : 1
-}
+  }
