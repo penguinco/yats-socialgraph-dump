@@ -86,7 +86,7 @@ ubuntu:
     }
 
 ##操作
-ruby:
+###ruby:
     $ bundle
     $ ruby scripts/tutorial.rb
 ###find by limit
@@ -267,7 +267,7 @@ ruby:
 
 > 164743710,51774619,umaiboo,6064612,kanda_daisuke,bolze_doujin,KEUMAYA,Joey__Jones,0mg,ma2omat2,amasa
 
-python:
+###python:
     $ easy_install pymongo
     $ easy_install netowrkx
     $ python scripts/pagerank.py hotchpotch 
