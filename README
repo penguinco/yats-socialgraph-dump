@@ -1,8 +1,30 @@
 twitter日本語ユーザー100万人のフォローイングとプロフィールです。
 レコメンデーションの実験や分析に使えるかもしれません。
 
-取得：
+内容：
+  streaming apiから日本語を含み、過去に400つぶやき以上、過去3週間以内に発言のユーザーを収集しました。
+  プロフィール情報、フォローイング情報を見ることが出来ます。
 
+プロフィールの内容：
+  約108万人分
+  フォローイングの中には英語のユーザーやprotectedのユーザーが含まれます。
+  ただし、それらのユーザーのプロフィールは収集されていません。
+
+ソーシャルグラフの内容：
+  約300万ノード / 約2.8億エッジ
+  内訳は以下の条件になります。
+  u  = 日本語アクティブユーザー
+  u2 = 日本語ではない OR 活発ではない OR api_error
+  => = following
+  データに入っているもの：
+    u => u
+    u => u2
+  入っていないもの：
+    u2 => u
+    u2 => u2
+
+取得：
+  http://
 操作：
 ruby:
   $ bundle
@@ -26,7 +48,7 @@ DATABASE: twitter        to     dump/twitter
         twitter.friends to dump/twitter/friends.bson
         twitter.profiles to dump/twitter/profiles.bson
 
-$ wget http://api.yats-data.com/data/yats.graph.ja.20110130.tar.gz
+$ wget http://api.yats-data.com/data/socialgraph/yats.graph.ja.20110130.tar.gz
 $ tar xzvf yats.graph.ja.20110130.tar.gz
 $ ls dump
 # 以下の操作の前にチェックしてください http://www.mongodb.org/display/DOCS/Import+Export+Tools
