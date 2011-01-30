@@ -25,8 +25,66 @@ streaming apiから日本語を含み、過去に400つぶやき以上、過去3
       u2 => u
       u2 => u2
 
-##取得
-  http://
+##MongoDBのインストール
+ubuntu:  
+    $ apt-get install mongodb
+
+###MongoDBにダンプを入れる
+以下のコマンドで生成したMongoDB(1.6.5) dumpをMongoDBに読み込みます。
+    $ mongodump --db twitter -v
+    DATABASE: twitter        to     dump/twitter
+          twitter.system.indexes to dump/twitter/system.indexes.bson
+          twitter.friends to dump/twitter/friends.bson
+          twitter.profiles to dump/twitter/profiles.bson
+
+    $ wget http://api.yats-data.com/data/socialgraph/yats.graph.ja.20110130.tar.gz
+    $ tar xzvf yats.graph.ja.20110130.tar.gz
+    $ ls dump
+    # 以下の操作の前にチェックしてください http://www.mongodb.org/display/DOCS/Import+Export+Tools
+    $ mongorestore -d twitter dump/twitter/
+    $ mongo
+    # how to use : http://www.mongodb.org/display/DOCS/Manual 
+     use twitter
+     db.friends.stats()                          
+    {
+	"ns" : "twitter.friends",
+	"count" : 1035491,
+	"size" : 3412631332,
+	"avgObjSize" : 3295.6648894099512,
+	"storageSize" : 3882193408,
+	"numExtents" : 28,
+	"nindexes" : 2,
+	"lastExtentSize" : 681069568,
+	"paddingFactor" : 1.0099999999880804,
+	"flags" : 0,
+	"totalIndexSize" : 90062848,
+	"indexSizes" : {
+		"_id_" : 46170112,
+		"internal_id_1" : 43892736
+	},
+	"ok" : 1
+    }
+     db.profiles.stats()
+    {
+	"ns" : "twitter.profiles",
+	"count" : 1088040,
+	"size" : 2900683092,
+	"avgObjSize" : 2665.971004742473,
+	"storageSize" : 3809510400,
+	"numExtents" : 28,
+	"nindexes" : 3,
+	"lastExtentSize" : 681069568,
+	"paddingFactor" : 1.4099999999730883,
+	"flags" : 1,
+	"totalIndexSize" : 148996448,
+	"indexSizes" : {
+		"_id_" : 45359104,
+		"internal_id_1" : 46981472,
+		"screen_name_1" : 56655872
+	},
+	"ok" : 1
+    }
+
 ##操作
 ruby:
     $ bundle
@@ -35,50 +93,52 @@ ruby:
     profiles.find().limit(1).each do |prof|
       pp prof
     end
-{"_id"=>BSON::ObjectId('4d29b935b69fff50abd3d690'),
->"contributors_enabled"=>false,
->"created_at"=>"Mon Oct 11 13:36:15 +0000 2010",
->"description"=>
-> "Pixiv内企画【絵師学生化】に参加中の橘さよと申します！鍵付きですがお気軽にフォローしてくださると嬉しいです´｀*　さよは「」でつぶやきます。それ以外は中の人です！　どうぞよろしくお願いします！！　※絵師学関係の方のみフォロー・リフォロー致します。ご了承下さい。",
->"favourites_count"=>0,
->"follow_request_sent"=>false,
->"followers_count"=>36,
->"following"=>false,
->"friends_count"=>37,
->"geo_enabled"=>false,
->"id"=>201266053,
->"id_str"=>"201266053",
->"internal_id"=>201266053,
->"is_translator"=>false,
->"lang"=>"ja",
->"listed_count"=>2,
->"location"=>"遊高2-9",
->"name"=>"橘　さよ",
->"notifications"=>false,
->"profile_background_color"=>"1A1B1F",
->"profile_background_image_url"=>
-> "http://a0.twimg.com/profile_background_images/177403026/095_-____.JPG",
->"profile_background_tile"=>true,
->"profile_image_url"=>
-> "http://a1.twimg.com/profile_images/1221894418/___400_normal.jpg",
->"profile_link_color"=>"2FC2EF",
->"profile_sidebar_border_color"=>"181A1E",
->"profile_sidebar_fill_color"=>"252429",
->"profile_text_color"=>"666666",
->"profile_use_background_image"=>true,
->"protected"=>true,
->"screen_name"=>"sayo_tcbn",
->"show_all_inline_media"=>false,
->"statuses_count"=>2865,
->"time_zone"=>"Hawaii",
->"url"=>
-> "http://www.pixiv.net/member_illust.php?mode=medium&illust_id=13466044",
->"utc_offset"=>-36000,
->"verified"=>false}
+> {"_id"=>BSON::ObjectId('4d29b935b69fff50abd3d690'),
+> "contributors_enabled"=>false,
+> "created_at"=>"Mon Oct 11 13:36:15 +0000 2010",
+> "description"=>
+>  "Pixiv内企画【絵師学生化】に参加中の橘さよと申します！鍵付きですがお気軽にフォローしてくださると嬉しいです´｀*　さよは「」でつぶやきます。それ以外は中の人です！　どうぞよろしくお願いします！！　※絵師学関係の方のみフォロー・リフォロー致します。ご了承下さい。",
+> "favourites_count"=>0,
+> "follow_request_sent"=>false,
+> "followers_count"=>36,
+> "following"=>false,
+> "friends_count"=>37,
+> "geo_enabled"=>false,
+> "id"=>201266053,
+> "id_str"=>"201266053",
+> "internal_id"=>201266053,
+> "is_translator"=>false,
+> "lang"=>"ja",
+> "listed_count"=>2,
+> "location"=>"遊高2-9",
+> "name"=>"橘　さよ",
+> "notifications"=>false,
+> "profile_background_color"=>"1A1B1F",
+> "profile_background_image_url"=>
+>  "http://a0.twimg.com/profile_background_images/177403026/095_-____.JPG",
+> "profile_background_tile"=>true,
+> "profile_image_url"=>
+>  "http://a1.twimg.com/profile_images/1221894418/___400_normal.jpg",
+> "profile_link_color"=>"2FC2EF",
+> "profile_sidebar_border_color"=>"181A1E",
+> "profile_sidebar_fill_color"=>"252429",
+> "profile_text_color"=>"666666",
+> "profile_use_background_image"=>true,
+> "protected"=>true,
+> "screen_name"=>"sayo_tcbn",
+> "show_all_inline_media"=>false,
+> "statuses_count"=>2865,
+> "time_zone"=>"Hawaii",
+> "url"=>
+>  "http://www.pixiv.net/member_illust.php?mode=medium&illust_id=13466044",
+> "utc_offset"=>-36000,
+> "verified"=>false}
+
 ###find by field
     profiles.find("screen_name" => 'fuba').each do |prof|
       pp prof
     end
+
 > {"_id"=>BSON::ObjectId('4c72cb941d41c8640e00135a'),
 > "contributors_enabled"=>false,
 > "created_at"=>"Fri Apr 13 00:12:57 +0000 2007",
@@ -143,7 +203,6 @@ ruby:
       pp prof
     end
 
-
 > {"_id"=>BSON::ObjectId('4c7254c51d41c831ff00092c'),
 > "listed_count"=>2386909,
 > "screen_name"=>"ichiyonnana"}
@@ -174,13 +233,17 @@ ruby:
 > {"_id"=>BSON::ObjectId('4c7273651d41c85ccb0131f0'),
 > "listed_count"=>2764,
 > "screen_name"=>"weeklyascii"}
+
 ###get following
     fuba_internal_id = profiles.find_one("screen_name" => "fuba")["internal_id"]
     fuba_following = friends.find_one("internal_id" => fuba_internal_id)
+
 ###is shokai followed by fuba?
     shokai_internal_id = profiles.find_one("screen_name" => "shokai")["internal_id"]
     pp fuba_following["ids"].include?(shokai_internal_id)
+
 > true
+
 ###output id csv
     friends.find("internal_id" => fuba_internal_id).each do |me|
       puts me["ids"].map{|id| id.to_s}.join(",")[0,100]
@@ -243,62 +306,4 @@ python:
 > hotchpotch.gml was created.
 
 
-##MongoDBのインストール
-ubuntu:  
-    $ apt-get install mongodb
 
-MongoDBにダンプを入れる
-以下のコマンドで生成したMongoDB(1.6.5) dumpをMongoDBに読み込みます。
-    $ mongodump --db twitter -v
-    DATABASE: twitter        to     dump/twitter
-          twitter.system.indexes to dump/twitter/system.indexes.bson
-          twitter.friends to dump/twitter/friends.bson
-          twitter.profiles to dump/twitter/profiles.bson
-
-    $ wget http://api.yats-data.com/data/socialgraph/yats.graph.ja.20110130.tar.gz
-    $ tar xzvf yats.graph.ja.20110130.tar.gz
-    $ ls dump
-    # 以下の操作の前にチェックしてください http://www.mongodb.org/display/DOCS/Import+Export+Tools
-    $ mongorestore -d twitter dump/twitter/
-    $ mongo
-    # how to use : http://www.mongodb.org/display/DOCS/Manual 
-     use twitter
-     db.friends.stats()                          
-    {
-	"ns" : "twitter.friends",
-	"count" : 1035491,
-	"size" : 3412631332,
-	"avgObjSize" : 3295.6648894099512,
-	"storageSize" : 3882193408,
-	"numExtents" : 28,
-	"nindexes" : 2,
-	"lastExtentSize" : 681069568,
-	"paddingFactor" : 1.0099999999880804,
-	"flags" : 0,
-	"totalIndexSize" : 90062848,
-	"indexSizes" : {
-		"_id_" : 46170112,
-		"internal_id_1" : 43892736
-	},
-	"ok" : 1
-    }
-     db.profiles.stats()
-    {
-	"ns" : "twitter.profiles",
-	"count" : 1088040,
-	"size" : 2900683092,
-	"avgObjSize" : 2665.971004742473,
-	"storageSize" : 3809510400,
-	"numExtents" : 28,
-	"nindexes" : 3,
-	"lastExtentSize" : 681069568,
-	"paddingFactor" : 1.4099999999730883,
-	"flags" : 1,
-	"totalIndexSize" : 148996448,
-	"indexSizes" : {
-		"_id_" : 45359104,
-		"internal_id_1" : 46981472,
-		"screen_name_1" : 56655872
-	},
-	"ok" : 1
-    }
