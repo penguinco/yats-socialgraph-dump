@@ -47,7 +47,7 @@ MongoDBにダンプを入れる
           twitter.system.indexes to dump/twitter/system.indexes.bson
           twitter.friends to dump/twitter/friends.bson
           twitter.profiles to dump/twitter/profiles.bson
-  
+
     $ wget http://api.yats-data.com/data/socialgraph/yats.graph.ja.20110130.tar.gz
     $ tar xzvf yats.graph.ja.20110130.tar.gz
     $ ls dump
