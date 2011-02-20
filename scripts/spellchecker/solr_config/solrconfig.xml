@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<!--
+ This is a stripped down config file used for a simple example...  
+ It is *not* a good example to work from. 
+-->
+<config>
+  <luceneMatchVersion>LUCENE_40</luceneMatchVersion>
+  <!--  The DirectoryFactory to use for indexes.
+        solr.StandardDirectoryFactory, the default, is filesystem based.
+        solr.RAMDirectoryFactory is memory based, not persistent, and doesn't work with replication. -->
+  <directoryFactory name="DirectoryFactory" class="${solr.directoryFactory:solr.StandardDirectoryFactory}"/>
+
+
+  <updateHandler class="solr.DirectUpdateHandler2" />
+
+  <requestDispatcher handleSelect="true" >
+    <requestParsers enableRemoteStreaming="false" multipartUploadLimitInKB="2048" />
+  </requestDispatcher>
+  
+  <requestHandler name="standard" class="solr.StandardRequestHandler" default="true" />
+  <requestHandler name="/update" class="solr.XmlUpdateRequestHandler" />
+  <requestHandler name="/admin/" class="org.apache.solr.handler.admin.AdminHandlers" />
+
+  <searchComponent name="spellcheck" class="solr.SpellCheckComponent">
+
+    <lst name="spellchecker">
+      <!--
+      Optional, it is required when more than one spellchecker is configured.
+      Select non-default name with spellcheck.dictionary in request handler.
+      -->
+      <str name="name">default</str>
+      <!-- The classname is optional, defaults to IndexBasedSpellChecker -->
+      <str name="classname">solr.IndexBasedSpellChecker</str>
+      <!--
+      Load tokens from the following field for spell checking,
+      analyzer for the field's type as defined in schema.xml are used
+      -->
+      <str name="field">valid_query</str>
+      <!-- Optional, by default use in-memory index (RAMDirectory) -->
+      <str name="spellcheckIndexDir">./spellchecker</str>
+      <!-- Set the accuracy (float) to be used for the suggestions. Default is 0.5 -->
+      <str name="accuracy">0.7</str>
+    </lst>
+    <!-- This field type's analyzer is used by the QueryConverter to tokenize the value for "q" parameter -->
+    <!-- <str name="queryAnalyzerFieldType">textSpell</str> -->
+  </searchComponent>
+  <!--
+  The SpellingQueryConverter to convert raw (CommonParams.Q) queries into tokens.  Uses a simple regular expression
+  to strip off field markup, boosts, ranges, etc. but it is not guaranteed to match an exact parse from the query parser.
+
+  Optional, defaults to solr.SpellingQueryConverter
+  -->
+  <queryConverter name="queryConverter" class="solr.SpellingQueryConverter"/>
+
+  <!--  Add to a RequestHandler
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  NOTE:  YOU LIKELY DO NOT WANT A SEPARATE REQUEST HANDLER FOR THIS COMPONENT.  THIS IS DONE HERE SOLELY FOR
+  THE SIMPLICITY OF THE EXAMPLE.  YOU WILL LIKELY WANT TO BIND THE COMPONENT TO THE /select STANDARD REQUEST HANDLER.
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  -->
+  <requestHandler name="/spellCheckCompRH" class="solr.SearchHandler">
+    <lst name="defaults">
+      <!-- Optional, must match spell checker's name as defined above, defaults to "default" -->
+      <str name="spellcheck.dictionary">default</str>
+      <!-- omp = Only More Popular -->
+      <str name="spellcheck.onlyMorePopular">false</str>
+      <!-- exr = Extended Results -->
+      <str name="spellcheck.extendedResults">false</str>
+      <!--  The number of suggestions to return -->
+      <str name="spellcheck.count">1</str>
+    </lst>
+    <!--  Add to a RequestHandler
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    REPEAT NOTE:  YOU LIKELY DO NOT WANT A SEPARATE REQUEST HANDLER FOR THIS COMPONENT.  THIS IS DONE HERE SOLELY FOR
+    THE SIMPLICITY OF THE EXAMPLE.  YOU WILL LIKELY WANT TO BIND THE COMPONENT TO THE /select STANDARD REQUEST HANDLER.
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    -->
+    <arr name="last-components">
+      <str>spellcheck</str>
+    </arr>
+  </requestHandler> 
+      
+  <!-- config for the admin interface --> 
+  <admin>
+    <defaultQuery>solr</defaultQuery>
+  </admin>
+
+</config>
+
