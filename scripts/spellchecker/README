@@ -1,0 +1,6 @@
+=begin
+$ ruby solr.rb
+complete... now we can play with 1080000 screen_name on solr.
+build spellcheck dictionary...
+  hitode09 => ["hitode909"]
+=end
