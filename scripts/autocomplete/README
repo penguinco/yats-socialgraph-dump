@@ -1,0 +1,4 @@
+Empirical study of http://antirez.com/post/autocomplete-with-redis.html
+
+$ ruby get_screenname.rb > screenname_followercount.csv
+$ ruby redis.rb

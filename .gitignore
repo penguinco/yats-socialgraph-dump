@@ -1,2 +1,3 @@
 *.gml
 Gemfile.lock
+*.csv
