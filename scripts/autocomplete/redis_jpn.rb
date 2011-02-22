@@ -1,24 +1,24 @@
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 require 'rubygems'
 require 'redis'
-$KCODE = "u"
+$KCODE = "UTF8"
 require 'moji'
 require 'MeCab'
-require_relative 'Romkan' #ruby is 1.8.7
+require_relative 'romkan' #ruby is 1.9.2
 
 LIMIT = 12
 BLOCK = (LIMIT/5).to_i
 FLIMIT = 4
 MORE = 10
 
-r = Redis.new
-m = MeCab::Tagger.new()
-m.parseToNode("日本語")
+EXPERIMENT_PORT = 12345
+redis = Redis.new(:port => EXPERIMENT_PORT)
+mecab = MeCab::Tagger.new
 
-return 0
-def yomi(text)
+def yomi(mecab,text)
   result = ""
-  node = MeCab::Tagger.new.parseToNode(text)
+  text = text.gsub(" ", "<SPACE>")
+  node = mecab.parseToNode(text)
   while node do
     yomi = node.feature.split(",")[-1]
     if yomi != "*"
@@ -28,12 +28,10 @@ def yomi(text)
     end
     node = node.next
   end
-  return result
+  return result.gsub("<SPACE>", " ")
 end
 
-need_update = true
-# Create the completion sorted set
-if need_update
+def build(mecab, r, file_path)
   puts "Loading entries in the Redis DB\n"
   line = 0
   File.new("city.csv").each_line{|n|
@@ -42,24 +40,35 @@ if need_update
       puts line
       puts n
     end
-    n_surface = n.strip.gsub("　", " ")
-    n = Moji.kata_to_hira(yomi(n_surface)).to_roma
-    c = 1
-    (1..(n.length)).each{|l|
-      prefix = n[0...l]
-      r.zadd(:compl,0,prefix)
-      if prefix.size <= FLIMIT
-        r.zincrby(prefix,1,n[prefix.size, n.size]) #if you load incrementaly, prefer zincrby()
-        count = r.incr("__count*#{prefix}")
-        if count > LIMIT
-          newcount = count - r.zremrangebyrank(prefix, 0, count-LIMIT+BLOCK)
-          r.set("__count*#{prefix}", newcount)
+    surface = n.strip.gsub("　", " ").gsub(/ +/, " ")
+    key_strokes = []
+    key_strokes << Moji.kata_to_hira(surface.encode!('UTF-8', 'UTF-8', :undef => :replace)).to_roma.downcase
+    key_strokes << Moji.kata_to_hira(yomi(mecab, surface).encode!('UTF-8', 'UTF-8', :undef => :replace)).to_roma.downcase
+    key_strokes.each do |key_stroke|
+      c = 1
+      (1..(key_stroke.length)).each{|l|
+        prefix = key_stroke[0...l]
+        r.zadd(:compl,0,prefix)
+        if prefix.size <= FLIMIT
+          r.zincrby(prefix,1,key_stroke[prefix.size, key_stroke.size]) #if you load incrementaly, prefer zincrby()
+          if rand(10) == 0
+            suf_size = r.zrange(prefix,0,-1).size
+            if suf_size >= LIMIT
+              r.zremrangebyrank(prefix, 0, suf_size-LIMIT+1)
+            end
+          end
+        end
+      }
+      r.zadd(:compl,0,key_stroke+"\t")
+      r.zincrby(:count,1,key_stroke)
+      r.zadd("__surface*#{key_stroke}",1,surface)
+      if rand(10) == 0
+        sur_size = r.zrange("__surface*#{key_stroke}", 0, -1).size
+        if sur_size > 2
+          r.zremrangebyrank("__surface*#{key_stroke}", 0, sur_size/2)
         end
       end
-    }
-    r.zadd(:compl,0,n+"\t")
-    r.zincrby(:count,1,n)
-    r.zadd("__surface*#{n}",1,n_surface)
+    end
   }
 end
 
@@ -89,29 +98,26 @@ end
 
 def complete_top(r,prefix,count)
   results = []
-  #return []
   range = r.zrevrange(prefix, 0, count)
   range.each {|entry|
-    results << prefix + entry[0...-1]
+    results << prefix + entry
   }
   return results
 end
 
 def complete(r,prefix,count)
-  prefix = Moji.kata_to_hira(prefix)
+  prefix = Moji.kata_to_hira(prefix).gsub("-", "ー")
   top = complete_top(r,prefix,count)
   if top.size <= count
-    return (top + complete_tail(r,prefix,count-top.size)).uniq.map{|v|r.zrevrange("__surface*#{v}",0,0)}
+    puts "oops"
+    return (top + complete_tail(r,prefix,count)).uniq.map{|v|r.zrevrange("__surface*#{v}",0,0)}
   else
     return top.map{|v|r.zrevrange("__surface*#{v}",0,0)}
   end
 end
 
-puts complete(r,"s",10)
-puts "----"
-puts complete(r,"さ".to_roma,10)
-puts "----"
-puts complete(r,"あず".to_roma,10)
-puts "----"
-puts complete(r,"nyan",10)
-puts "----"
+if ARGV.size == 1
+  puts complete(redis, ARGV[0].to_roma.downcase, 5)
+else
+  build(mecab, redis, "city.csv")
+end
