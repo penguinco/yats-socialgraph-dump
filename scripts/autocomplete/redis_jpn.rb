@@ -12,7 +12,7 @@ FLIMIT = 4
 MORE = 10
 
 EXPERIMENT_PORT = 12345
-redis = Redis.new(:port => EXPERIMENT_PORT)
+$redis = Redis.new(:port => EXPERIMENT_PORT)
 mecab = MeCab::Tagger.new
 
 def yomi(mecab,text)
@@ -105,19 +105,23 @@ def complete_top(r,prefix,count)
   return results
 end
 
-def complete(r,prefix,count)
+def _complete(r,prefix,count)
   prefix = Moji.kata_to_hira(prefix).gsub("-", "ー")
   top = complete_top(r,prefix,count)
   if top.size <= count
-    puts "oops"
-    return (top + complete_tail(r,prefix,count)).uniq.map{|v|r.zrevrange("__surface*#{v}",0,0)}
+    return (top + complete_tail(r,prefix,count)).uniq.map{|v|r.zrevrange("__surface*#{v}",0,0)[0]}
   else
-    return top.map{|v|r.zrevrange("__surface*#{v}",0,0)}
+    return top.map{|v|r.zrevrange("__surface*#{v}",0,0)[0]}
   end
 end
 
+def complete(prefix,count)
+  return _complete($redis,prefix.to_roma.downcase,count)
+end
+
 if ARGV.size == 1
-  puts complete(redis, ARGV[0].to_roma.downcase, 5)
+  puts _complete(redis, ARGV[0].to_roma.downcase, 5)
 else
-  build(mecab, redis, "city.csv")
+  puts "build"
+  #build(mecab, redis, "city.csv")
 end

@@ -1,3 +1,4 @@
 *.gml
 Gemfile.lock
 *.csv
+*logs*
