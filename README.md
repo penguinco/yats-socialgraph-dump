@@ -37,7 +37,7 @@ ubuntu:
           twitter.friends to dump/twitter/friends.bson
           twitter.profiles to dump/twitter/profiles.bson
 
-    $ download archive from google drive https://drive.google.com/open?id=0B3pj2ILQNmjRT29nSmJQRkhlcHc
+    $ download archive from google drive ['drive.google.com/open', '?', 'id=0B3pj2ILQNmjRT29nSmJQRkhlcHc'].join('')
     $ tar xzvf yats.graph.ja.20110130.tar.gz
     $ ls dump
     # 以下の操作の前にチェックしてください http://www.mongodb.org/display/DOCS/Import+Export+Tools
